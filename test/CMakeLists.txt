@@ -1,0 +1,12 @@
+
+add_executable(TestSingleScalarRenderer TestSingleScalarRenderer.cpp)
+target_link_libraries(TestSingleScalarRenderer PRIVATE LibMultiVolumeRenderer)
+
+add_executable(TestScalarAndVectorRenderer TestScalarAndVectorRenderer.cpp)
+target_link_libraries(TestScalarAndVectorRenderer PRIVATE LibMultiVolumeRenderer)
+
+add_executable(TestMultiScalarRenderer TestMultiScalarRenderer.cpp)
+target_link_libraries(TestMultiScalarRenderer PRIVATE LibMultiVolumeRenderer)
+
+add_executable(TestMultiIsoSurfaceRenderer TestMultiIsoSurfaceRenderer.cpp)
+target_link_libraries(TestMultiIsoSurfaceRenderer PRIVATE LibMultiVolumeRenderer)
