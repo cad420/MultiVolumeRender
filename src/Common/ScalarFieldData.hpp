@@ -5,7 +5,10 @@
 #ifndef MULTIVOLUMERENDER_VOLUMEDATA_HPP
 #define MULTIVOLUMERENDER_VOLUMEDATA_HPP
 #include <cstdint>
+#include <vector>
+#include <limits>
 enum class ScalarFieldDataType{
+    Unknown,
     UInt8,
     Int8,
     UInt16,
@@ -18,9 +21,16 @@ enum class ScalarFieldDataType{
 
 class ScalarFieldData{
 public:
+    ScalarFieldData():x(0),y(0),z(0),type(ScalarFieldDataType::Unknown){
+        max_scalar=-std::numeric_limits<double>::max();
+        min_scalar=std::numeric_limits<double>::max();
+        iso_value=min_scalar;
+    }
     uint32_t x,y,z;
     ScalarFieldDataType type;
-
+    std::vector<uint8_t> data;
+    double max_scalar,min_scalar;
+    double iso_value;
 };
 
 

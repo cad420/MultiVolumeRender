@@ -12,9 +12,12 @@
 class TFPoint{
 public:
     TFPoint(double key,const std::array<double,4>& value):key(key),value(value){}
-    bool operator==(const TFPoint& other){
+    TFPoint(const TFPoint&)=default;
+    ~TFPoint()=default;
+    bool operator == (const TFPoint& other) const {
         return std::abs(key-other.key)<0.00001;
     }
+
     double key;//0.0-1.0
     std::array<double,4> value;
 };
@@ -24,7 +27,9 @@ public:
     TransferFunc()=default;
     void AddTFPoint(const TFPoint& point){ points.push_back(point);}
     void ClearTFPoints(){points.clear();}
-    void RemoveTFPoint(const TFPoint& point){points.remove(point);}
+    void RemoveTFPoint(const TFPoint& point){
+        points.remove(point);
+    }
     auto GetColorTable()->const std::vector<float>&;
 private:
     std::list<TFPoint> points;
@@ -34,7 +39,7 @@ private:
 inline auto TransferFunc::GetColorTable() -> const std::vector<float>& {
     std::map<uint8_t ,std::array<double,4>> color_setting;
     for(auto& it:points){
-        color_setting[it.key]=it.value;
+        color_setting[it.key*(TF_DIM-1)]=it.value;
     }
     transfer_func.resize(TF_DIM*4,0.f);
     std::vector<uint8_t> keys;
