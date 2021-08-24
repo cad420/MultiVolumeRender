@@ -332,11 +332,11 @@ SingleScalarFieldRender::SingleScalarFieldRender(int w, int h) {
 }
 
 void SingleScalarFieldRender::SetScalarFieldData(ScalarFieldData data) {
-    impl->SetScalarFieldData(data);
+    impl->SetScalarFieldData(std::move(data));
 }
 
 void SingleScalarFieldRender::SetTransferFunc(TransferFunc tf) {
-    impl->SetTransferFunc(tf);
+    impl->SetTransferFunc(std::move(tf));
 }
 
 void SingleScalarFieldRender::Render() {
