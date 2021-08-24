@@ -22,6 +22,9 @@ private:
 public:
     Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
     Shader()=default;
+    ~Shader(){
+        glDeleteProgram(ID);
+    }
     void setShader(const char *vertexShader, const char *fragmentShader,const char *geometryShader=nullptr);
     void use();
     void setBool(const std::string& name,bool value) const;

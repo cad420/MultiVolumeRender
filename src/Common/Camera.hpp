@@ -223,11 +223,11 @@ inline void TrackBallCamera::processMouseMove(double x_pos, double y_pos) {
 
 }
 
-float TrackBallCamera::getZoom() const {
+inline float TrackBallCamera::getZoom() const {
     return 45.f;
 }
 
-glm::vec3 TrackBallCamera::getCameraPos() const {
+inline glm::vec3 TrackBallCamera::getCameraPos() const {
 
     auto m = glm::translate(glm::mat4(1.f), -ball_center_pos);
 
@@ -236,7 +236,7 @@ glm::vec3 TrackBallCamera::getCameraPos() const {
     return mm * glm::transpose(glm::mat4_cast(cur_quat)) * m * glm::vec4(eye_pos, 1.f);
 }
 
-glm::mat4 TrackBallCamera::getViewMatrix() {
+inline glm::mat4 TrackBallCamera::getViewMatrix() {
     auto m = glm::translate(glm::mat4(1.f), -ball_center_pos);
 
     auto mm = glm::translate(glm::mat4(1.f), ball_center_pos);

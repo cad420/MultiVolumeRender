@@ -178,7 +178,17 @@ void SingleScalarFieldRenderImpl::Render() {
 }
 
 SingleScalarFieldRenderImpl::~SingleScalarFieldRenderImpl() {
-
+    glDeleteVertexArrays(1,&proxy_cube_vao);
+    glDeleteBuffers(1,&proxy_cube_vbo);
+    glDeleteBuffers(1,&proxy_cube_ebo);
+    glDeleteVertexArrays(1,&screen_quad_vao);
+    glDeleteBuffers(1,&screen_quad_vbo);
+    glDeleteRenderbuffers(1,&raycast_pos_rbo);
+    glDeleteFramebuffers(1,&raycast_pos_fbo);
+    glDeleteTextures(1,&raycast_entry_pos_tex);
+    glDeleteTextures(1,&raycast_exit_pos_tex);
+    glDeleteTextures(1,&tf_tex);
+    glDeleteTextures(1,&volume_tex);
 }
 
 void SingleScalarFieldRenderImpl::initGL() {
