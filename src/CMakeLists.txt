@@ -31,3 +31,8 @@ embed_shaders(
         TARGET ${CMAKE_CURRENT_SOURCE_DIR}/SingleScalarField/Shaders.hpp
         DIR ${CMAKE_CURRENT_SOURCE_DIR}/SingleScalarField/Shader
 )
+embed_shaders(
+        CONFIG_FILE ${CMAKE_CURRENT_SOURCE_DIR}/MultiScalarField/Shaders.hpp.in
+        TARGET ${CMAKE_CURRENT_SOURCE_DIR}/MultiScalarField/Shaders.hpp
+        DIR ${CMAKE_CURRENT_SOURCE_DIR}/MultiScalarField/Shader
+)
