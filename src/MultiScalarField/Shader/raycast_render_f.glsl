@@ -39,7 +39,7 @@ void main() {
             if(sample_color1.a>0.f || sample_color2.a>0.f){
                 sample_color1.rgb=phongShading(sample_pos_in_tex,sample_color1.rgb,ray_direction,1);
                 sample_color2.rgb=phongShading(sample_pos_in_tex,sample_color2.rgb,ray_direction,2);
-                vec4 sample_color=sample_color1*0.5f+sample_color2*0.5f;
+                vec4 sample_color=sample_color1*sample_color1.a+sample_color2*sample_color2.a;
                 color=color + sample_color*vec4(sample_color.aaa,1.f)*(1.f-color.a);
                 if(color.a>0.99f)
                 break;
