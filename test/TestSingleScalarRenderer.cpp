@@ -10,7 +10,7 @@ int main()
     try
     {
         ScalarFieldData scalarFieldData;
-        const char *file_name = "mouselod6_366_463_161_uint8.raw";
+        const char *file_name = "aneurism_256_256_256_uint8.raw";
         SetDimAndTypeByFileName(file_name, scalarFieldData);
         LoadRawVolumeData(file_name, scalarFieldData);
         SingleScalarFieldRender singleScalarFieldRender(1200, 900);
@@ -19,7 +19,7 @@ int main()
         tf.AddTFPoint({0.0, {0.0, 0.0, 0.0, 0.0}});
         tf.AddTFPoint({0.5, {0.9, 0.5, 0.2, 0.0}});
         tf.AddTFPoint({1.0, {1.0, 1.0, 0.2, 1.0}});
-        singleScalarFieldRender.SetTransferFunc(tf);
+        singleScalarFieldRender.SetTransferFunc(std::move(tf));
         singleScalarFieldRender.Render();
     }
     catch (const std::exception &err)
