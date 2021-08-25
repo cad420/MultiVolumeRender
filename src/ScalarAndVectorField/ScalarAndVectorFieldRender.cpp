@@ -96,8 +96,6 @@ ScalarAndVectorFieldRenderImpl::ScalarAndVectorFieldRenderImpl(int w, int h) : w
 {
     initGL();
 
-    camera = std::make_unique<TrackBallCamera>(0.5f, w, h, glm::vec3{0.5f, 0.5f, 0.5f});
-
     raycast_pos_shader = std::make_unique<Shader>();
     raycast_pos_shader->setShader(shader::raycast_pos_v, shader::raycast_pos_f);
     raycast_render_shader = std::make_unique<Shader>();
@@ -125,6 +123,9 @@ void ScalarAndVectorFieldRenderImpl::SetScalarFieldData(ScalarFieldData data)
     glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, data.x, data.y, data.z, 0, GL_RED, GL_UNSIGNED_BYTE, data.data.data());
     volume_dim = {data.x, data.y, data.z};
     voxel = 1.f / std::max({volume_dim[0], volume_dim[1], volume_dim[2]});
+    camera = std::make_unique<TrackBallCamera>(0.5f, window_w, window_h, glm::vec3{0.5f*volume_dim[0]*voxel,
+                                                                                   0.5f*volume_dim[1]*voxel,
+                                                                                   0.5f*volume_dim[2]*voxel});
     setProxyCube();
 }
 
@@ -177,6 +178,7 @@ void ScalarAndVectorFieldRenderImpl::bindShaderUniform()
 
     raycast_render_shader->setFloat("voxel", voxel);
     raycast_render_shader->setFloat("step", voxel * 0.3f);
+    raycast_render_shader->setVec3("volume_board",volume_dim[0]*voxel,volume_dim[1]*voxel,volume_dim[2]*voxel);
     raycast_render_shader->setVec4("bg_color", 0.f, 0.f, 0.f, 1.f);
     raycast_render_shader->setVec4("line_color", 1.f, 0.f, 0.f, 1.f);
 

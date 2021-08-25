@@ -43,6 +43,7 @@ uniform vec3 light_direction;
 
 uniform float step;
 uniform float voxel;
+uniform vec3 volume_board;
 uniform vec4 bg_color;
 
 vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction,int n);
@@ -55,15 +56,17 @@ void main() {
     int steps=int(distance/step);
     vec4 color=vec4(0.f);
     vec3 sample_pos=ray_entry_pos;
+    vec3 sample_pos_in_tex;
     for(int i=0;i<steps;i++){
-        float scalar1=texture(volume_data1,sample_pos).r;
-        float scalar2=texture(volume_data2,sample_pos).r;
+        sample_pos_in_tex=sample_pos/volume_board;
+        float scalar1=texture(volume_data1,sample_pos_in_tex).r;
+        float scalar2=texture(volume_data2,sample_pos_in_tex).r;
         if(scalar1>0.f || scalar2>0.f){
             vec4 sample_color1=texture(transfer_func1,scalar1);
             vec4 sample_color2=texture(transfer_func2,scalar2);
             if(sample_color1.a>0.f || sample_color2.a>0.f){
-                sample_color1.rgb=phongShading(sample_pos,sample_color1.rgb,ray_direction,1);
-                sample_color2.rgb=phongShading(sample_pos,sample_color2.rgb,ray_direction,2);
+                sample_color1.rgb=phongShading(sample_pos_in_tex,sample_color1.rgb,ray_direction,1);
+                sample_color2.rgb=phongShading(sample_pos_in_tex,sample_color2.rgb,ray_direction,2);
                 vec4 sample_color=sample_color1*0.5f+sample_color2*0.5f;
                 color=color + sample_color*vec4(sample_color.aaa,1.f)*(1.f-color.a);
                 if(color.a>0.99f)

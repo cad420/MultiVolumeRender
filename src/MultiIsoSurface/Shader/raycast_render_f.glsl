@@ -13,6 +13,7 @@ uniform vec3 light_direction;
 
 uniform float step;
 uniform float voxel;
+uniform vec3 volume_board;
 uniform vec4 bg_color;
 uniform vec4 color1;
 uniform vec4 color2;
@@ -30,25 +31,27 @@ void main() {
     vec4 color=vec4(0.f);
     vec3 sample_pos=ray_entry_pos;
     bool outside1=true,outside2=true;
+    vec3 sample_pos_in_tex;
     for(int i=0;i<steps;i++){
-        float scalar1=texture(volume_data1,sample_pos).r;
+        sample_pos_in_tex=sample_pos/volume_board;
+        float scalar1=texture(volume_data1,sample_pos_in_tex).r;
         if(scalar1<iso_value1) outside1=true;
-        float scalar2=texture(volume_data2,sample_pos).r;
+        float scalar2=texture(volume_data2,sample_pos_in_tex).r;
         if(scalar2<iso_value2) outside2=true;
         if(scalar1>=iso_value1 && outside1 && scalar2>=iso_value2 && outside2){
 
-            color.rgb = phongShading(sample_pos,color1.rgb,ray_direction,1)*0.5
-                       +phongShading(sample_pos,color2.rgb,ray_direction,2)*0.5;
+            color.rgb = phongShading(sample_pos_in_tex,color1.rgb,ray_direction,1)*0.5
+                       +phongShading(sample_pos_in_tex,color2.rgb,ray_direction,2)*0.5;
             color.a=color1.a*0.5+color2.a*0.5;
             break;
         }
         else if(scalar1>=iso_value1 && outside1){
-            color.rgb=phongShading(sample_pos,color1.rgb,ray_direction,1);
+            color.rgb=phongShading(sample_pos_in_tex,color1.rgb,ray_direction,1);
             color.a=color1.a;
             break;
         }
         else if(scalar2>=iso_value2 && outside2){
-            color.rgb=phongShading(sample_pos,color2.rgb,ray_direction,2);
+            color.rgb=phongShading(sample_pos_in_tex,color2.rgb,ray_direction,2);
             color.a=color2.a;
             break;
         }

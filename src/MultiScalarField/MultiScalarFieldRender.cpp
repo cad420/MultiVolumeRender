@@ -92,8 +92,6 @@ MultiScalarFieldRenderImpl::MultiScalarFieldRenderImpl(int w, int h) : window_w(
 {
     initGL();
 
-    camera = std::make_unique<TrackBallCamera>(0.5f, w, h, glm::vec3{0.5f, 0.5f, 0.5f});
-
     raycast_pos_shader = std::make_unique<Shader>();
     raycast_pos_shader->setShader(shader::raycast_pos_v, shader::raycast_pos_f);
     raycast_render_shader = std::make_unique<Shader>();
@@ -138,6 +136,9 @@ void MultiScalarFieldRenderImpl::SetScalarFieldData(ScalarFieldData data1, Scala
 
     volume_dim = {data1.x, data1.y, data1.z};
     voxel = 1.f / std::max({volume_dim[0], volume_dim[1], volume_dim[2]});
+    camera = std::make_unique<TrackBallCamera>(0.5f, window_w, window_h, glm::vec3{0.5f*volume_dim[0]*voxel,
+                                                                                   0.5f*volume_dim[1]*voxel,
+                                                                                   0.5f*volume_dim[2]*voxel});
     setProxyCube();
 }
 
@@ -177,6 +178,7 @@ void MultiScalarFieldRenderImpl::bindShaderUniform()
     raycast_render_shader->setFloat("voxel", voxel);
     raycast_render_shader->setFloat("step", voxel * 0.3f);
     raycast_render_shader->setVec4("bg_color", 0.f, 0.f, 0.f, 1.f);
+    raycast_render_shader->setVec3("volume_board",volume_dim[0]*voxel,volume_dim[1]*voxel,volume_dim[2]*voxel);
 
     raycast_render_shader->setFloat("ka", 0.3f);
     raycast_render_shader->setFloat("kd", 0.7f);

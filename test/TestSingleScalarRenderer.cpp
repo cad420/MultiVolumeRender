@@ -10,7 +10,7 @@ int main()
     try
     {
         ScalarFieldData scalarFieldData;
-        const char *file_name = "aneurism_256_256_256_uint8.raw";
+        const char *file_name = "mouselod6_366_463_161_uint8.raw";
         SetDimAndTypeByFileName(file_name, scalarFieldData);
         LoadRawVolumeData(file_name, scalarFieldData);
         SingleScalarFieldRender singleScalarFieldRender(1200, 900);

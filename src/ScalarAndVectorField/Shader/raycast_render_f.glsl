@@ -13,8 +13,10 @@ uniform vec3 light_direction;
 
 uniform float step;
 uniform float voxel;
+uniform vec3 volume_board;
 uniform vec4 bg_color;
 uniform vec4 line_color;
+
 vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction);
 void main() {
     vec3 ray_entry_pos=imageLoad(entry_pos,ivec2(gl_FragCoord.xy)).xyz;
@@ -28,11 +30,13 @@ void main() {
     int steps=int(distance/step);
     vec4 color=vec4(0.f);
     vec3 sample_pos=ray_entry_pos;
+    vec3 sample_pos_in_tex;
     for(int i=0;i<steps;i++){
-        float scalar=texture(volume_data,sample_pos).r;
+        sample_pos_in_tex=sample_pos/volume_board;
+        float scalar=texture(volume_data,sample_pos_in_tex).r;
         if(scalar>0.f){
             vec4 sample_color=texture(transfer_func,scalar);
-            sample_color.rgb=phongShading(sample_pos,sample_color.rgb,ray_direction);
+            sample_color.rgb=phongShading(sample_pos_in_tex,sample_color.rgb,ray_direction);
             color=color + sample_color*vec4(sample_color.aaa,1.f)*(1.f-color.a);
             if(color.a>0.99f)
                 break;
