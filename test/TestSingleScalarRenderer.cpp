@@ -1,12 +1,14 @@
 //
 // Created by wyz on 2021/8/23.
 //
-#include <Common/TransferFunc.hpp>
 #include <Common/DataLoader.hpp>
+#include <Common/TransferFunc.hpp>
 #include <SingleScalarField/SingleScalarFieldRender.hpp>
 
-int main(){
-    try{
+int main()
+{
+    try
+    {
         ScalarFieldData scalarFieldData;
         const char *file_name = "aneurism_256_256_256_uint8.raw";
         SetDimAndTypeByFileName(file_name, scalarFieldData);
@@ -20,7 +22,8 @@ int main(){
         singleScalarFieldRender.SetTransferFunc(tf);
         singleScalarFieldRender.Render();
     }
-    catch (const std::exception& err) {
+    catch (const std::exception &err)
+    {
         LOG_ERROR(err.what());
     }
 
