@@ -6,7 +6,7 @@ list(
         APPEND
         MultiVolumeRender_SRCS
         SingleScalarField/SingleScalarFieldRender.cpp
-        ScalarAndVectorField/ScalarAndVectorFiledRender.cpp
+        ScalarAndVectorField/ScalarAndVectorFieldRender.cpp
         MultiScalarField/MultiScalarFieldRender.cpp
         MultiIsoSurface/MultiIsoSurfaceRender.cpp
         ${PROJECT_SOURCE_DIR}/third_party/glad/src/glad.c
@@ -40,4 +40,9 @@ embed_shaders(
         CONFIG_FILE ${CMAKE_CURRENT_SOURCE_DIR}/MultiIsoSurface/Shaders.hpp.in
         TARGET ${CMAKE_CURRENT_SOURCE_DIR}/MultiIsoSurface/Shaders.hpp
         DIR ${CMAKE_CURRENT_SOURCE_DIR}/MultiIsoSurface/Shader
+)
+embed_shaders(
+        CONFIG_FILE ${CMAKE_CURRENT_SOURCE_DIR}/ScalarAndVectorField/Shaders.hpp.in
+        TARGET ${CMAKE_CURRENT_SOURCE_DIR}/ScalarAndVectorField/Shaders.hpp
+        DIR ${CMAKE_CURRENT_SOURCE_DIR}/ScalarAndVectorField/Shader
 )
