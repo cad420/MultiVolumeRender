@@ -13,6 +13,9 @@ int main()
         const char *file_name = "aneurism_256_256_256_uint8.raw";
         SetDimAndTypeByFileName(file_name, scalarFieldData);
         LoadRawVolumeData(file_name, scalarFieldData);
+//        scalarFieldData.space_x=0.32f;
+//        scalarFieldData.space_y=0.32f;
+//        scalarFieldData.space_z=1.f;
         SingleScalarFieldRender singleScalarFieldRender(1200, 900);
         singleScalarFieldRender.SetScalarFieldData(std::move(scalarFieldData));
         TransferFunc tf;

@@ -17,6 +17,7 @@ uniform float step;
 uniform float voxel;
 uniform vec3 volume_board;
 uniform vec4 bg_color;
+uniform vec3 space_ratio;
 
 vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction,int n);
 void main() {
@@ -64,7 +65,8 @@ vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction,int n)
         for(int k=-1;k<2;k++){//z
             for(int j=-1;j<2;j++){//y
                 for(int i=-1;i<2;i++){//x
-                    value[(k+1)*9+(j+1)*3+i+1]=texture(volume_data1,samplePos+vec3(voxel*i,voxel*j,voxel*k)).r;
+                    value[(k+1)*9+(j+1)*3+i+1]=texture(volume_data1,
+                    samplePos+vec3(voxel*i/space_ratio.x,voxel*j/space_ratio.y,voxel*k/space_ratio.z)).r;
                 }
             }
         }
@@ -72,7 +74,8 @@ vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction,int n)
         for(int k=-1;k<2;k++){//z
             for(int j=-1;j<2;j++){//y
                 for(int i=-1;i<2;i++){//x
-                    value[(k+1)*9+(j+1)*3+i+1]=texture(volume_data2,samplePos+vec3(voxel*i,voxel*j,voxel*k)).r;
+                    value[(k+1)*9+(j+1)*3+i+1]=texture(volume_data2,
+                    samplePos+vec3(voxel*i/space_ratio.x,voxel*j/space_ratio.y,voxel*k/space_ratio.z)).r;
                 }
             }
         }
@@ -110,14 +113,14 @@ vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction,int n)
     N.z=(t2[0]+t2[1]*4+t2[2])/6;
 #else
     if(n==1){
-        N.x=(texture(volume_data,samplePos+vec3(step,0,0)).r-texture(volume_data1,samplePos+vec3(-step,0,0)).r);
-        N.y=(texture(volume_data,samplePos+vec3(0,step,0)).r-texture(volume_data1,samplePos+vec3(0,-step,0)).r);
-        N.z=(texture(volume_data,samplePos+vec3(0,0,step)).r-texture(volume_data1,samplePos+vec3(0,0,-step)).r);
+        N.x=(texture(volume_data1,samplePos+vec3(voxel,0,0)).r-texture(volume_data1,samplePos+vec3(-voxel,0,0)).r);
+        N.y=(texture(volume_data1,samplePos+vec3(0,voxel,0)).r-texture(volume_data1,samplePos+vec3(0,-voxel,0)).r);
+        N.z=(texture(volume_data1,samplePos+vec3(0,0,voxel)).r-texture(volume_data1,samplePos+vec3(0,0,-voxel)).r);
     }
     else if(n==2){
-        N.x=(texture(volume_data,samplePos+vec3(step,0,0)).r-texture(volume_data2,samplePos+vec3(-step,0,0)).r);
-        N.y=(texture(volume_data,samplePos+vec3(0,step,0)).r-texture(volume_data2,samplePos+vec3(0,-step,0)).r);
-        N.z=(texture(volume_data,samplePos+vec3(0,0,step)).r-texture(volume_data2,samplePos+vec3(0,0,-step)).r);
+        N.x=(texture(volume_data2,samplePos+vec3(voxel,0,0)).r-texture(volume_data2,samplePos+vec3(-voxel,0,0)).r);
+        N.y=(texture(volume_data2,samplePos+vec3(0,voxel,0)).r-texture(volume_data2,samplePos+vec3(0,-voxel,0)).r);
+        N.z=(texture(volume_data2,samplePos+vec3(0,0,voxel)).r-texture(volume_data2,samplePos+vec3(0,0,-voxel)).r);
     }
 #endif
 

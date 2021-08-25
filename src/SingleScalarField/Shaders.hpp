@@ -43,6 +43,7 @@ uniform float step;
 uniform float voxel;
 uniform vec4 bg_color;
 uniform vec3 volume_board;
+uniform vec3 space_ratio;
 
 vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction);
 void main() {
@@ -85,7 +86,8 @@ vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction)
     for(int k=-1;k<2;k++){//z
         for(int j=-1;j<2;j++){//y
             for(int i=-1;i<2;i++){//x
-                value[(k+1)*9+(j+1)*3+i+1]=texture(volume_data,samplePos+vec3(voxel*i,voxel*j,voxel*k)).r;
+                value[(k+1)*9+(j+1)*3+i+1]=texture(volume_data,
+                samplePos+vec3(voxel*i/space_ratio.x,voxel*j/space_ratio.y,voxel*k/space_ratio.z)).r;
             }
         }
     }

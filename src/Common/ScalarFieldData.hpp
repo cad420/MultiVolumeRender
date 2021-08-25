@@ -25,13 +25,14 @@ enum class ScalarFieldDataType
 class ScalarFieldData
 {
   public:
-    ScalarFieldData() : x(0), y(0), z(0), type(ScalarFieldDataType::Unknown)
+    ScalarFieldData() : x(0), y(0), z(0), space_x(1.f), space_y(1.f), space_z(1.f), type(ScalarFieldDataType::Unknown)
     {
         max_scalar = -std::numeric_limits<double>::max();
         min_scalar = std::numeric_limits<double>::max();
     }
 
     uint32_t x, y, z;
+    float space_x, space_y, space_z;
     ScalarFieldDataType type;
     std::vector<uint8_t> data;
     double max_scalar, min_scalar;

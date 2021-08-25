@@ -51,6 +51,7 @@ class SingleScalarFieldRenderImpl
     GLuint volume_tex;
     float voxel;
     std::array<uint32_t, 3> volume_dim;
+    std::array<float, 3> space_ratio;
 };
 
 std::function<void(GLFWwindow *window, int width, int height)> framebuffer_resize_callback;
@@ -122,9 +123,11 @@ void SingleScalarFieldRenderImpl::SetScalarFieldData(ScalarFieldData scalarField
                  GL_UNSIGNED_BYTE, scalarFieldData.data.data());
     volume_dim = {scalarFieldData.x, scalarFieldData.y, scalarFieldData.z};
     voxel = 1.f / std::max({volume_dim[0], volume_dim[1], volume_dim[2]});
-    camera = std::make_unique<TrackBallCamera>(0.5f, window_w, window_h, glm::vec3{0.5f*volume_dim[0]*voxel,
-                                                                                   0.5f*volume_dim[1]*voxel,
-                                                                                   0.5f*volume_dim[2]*voxel});
+    auto min_space=std::min({scalarFieldData.space_x,scalarFieldData.space_y,scalarFieldData.space_z});
+    space_ratio={scalarFieldData.space_x/min_space,scalarFieldData.space_y/min_space,scalarFieldData.space_z/min_space};
+    camera = std::make_unique<TrackBallCamera>(0.5f, window_w, window_h, glm::vec3{0.5f*volume_dim[0]*voxel*space_ratio[0],
+                                                                                   0.5f*volume_dim[1]*voxel*space_ratio[1],
+                                                                                   0.5f*volume_dim[2]*voxel*space_ratio[2]});
     setProxyCube();
 }
 
@@ -151,7 +154,10 @@ void SingleScalarFieldRenderImpl::bindShaderUniform()
 
     raycast_render_shader->setFloat("voxel", voxel);
     raycast_render_shader->setFloat("step", voxel * 0.3f);
-    raycast_render_shader->setVec3("volume_board",volume_dim[0]*voxel,volume_dim[1]*voxel,volume_dim[2]*voxel);
+    raycast_render_shader->setVec3("volume_board",volume_dim[0]*voxel*space_ratio[0],
+                                   volume_dim[1]*voxel*space_ratio[1],
+                                   volume_dim[2]*voxel*space_ratio[2]);
+    raycast_render_shader->setVec3("space_ratio",space_ratio[0],space_ratio[1],space_ratio[2]);
     raycast_render_shader->setVec4("bg_color", 0.f, 0.f, 0.f, 1.f);
 
     raycast_render_shader->setFloat("ka", 0.3f);
@@ -290,13 +296,13 @@ void SingleScalarFieldRenderImpl::setProxyCube()
 {
     std::array<std::array<GLfloat, 3>, 8> proxy_cube_vertices;
     proxy_cube_vertices[0] = {0.f, 0.f, 0.f};
-    proxy_cube_vertices[1] = {volume_dim[0] * voxel, 0.f, 0.f};
-    proxy_cube_vertices[2] = {volume_dim[0] * voxel, volume_dim[1] * voxel, 0.f};
-    proxy_cube_vertices[3] = {0.f, volume_dim[1] * voxel, 0.f};
-    proxy_cube_vertices[4] = {0.f, 0.f, volume_dim[2] * voxel};
-    proxy_cube_vertices[5] = {volume_dim[0] * voxel, 0.f, volume_dim[2] * voxel};
-    proxy_cube_vertices[6] = {volume_dim[0] * voxel, volume_dim[1] * voxel, volume_dim[2] * voxel};
-    proxy_cube_vertices[7] = {0.f, volume_dim[1] * voxel, volume_dim[2] * voxel};
+    proxy_cube_vertices[1] = {volume_dim[0] * voxel*space_ratio[0], 0.f, 0.f};
+    proxy_cube_vertices[2] = {volume_dim[0] * voxel*space_ratio[0], volume_dim[1] * voxel*space_ratio[1], 0.f};
+    proxy_cube_vertices[3] = {0.f, volume_dim[1] * voxel*space_ratio[1], 0.f};
+    proxy_cube_vertices[4] = {0.f, 0.f, volume_dim[2] * voxel*space_ratio[2]};
+    proxy_cube_vertices[5] = {volume_dim[0] * voxel*space_ratio[0], 0.f, volume_dim[2] * voxel*space_ratio[2]};
+    proxy_cube_vertices[6] = {volume_dim[0] * voxel*space_ratio[0], volume_dim[1] * voxel*space_ratio[1], volume_dim[2] * voxel*space_ratio[2]};
+    proxy_cube_vertices[7] = {0.f, volume_dim[1] * voxel*space_ratio[1], volume_dim[2] * voxel*space_ratio[2]};
 
     std::array<GLuint, 36> proxy_cube_vertex_indices = {0, 1, 2, 0, 2, 3, 0, 4, 1, 4, 5, 1, 1, 5, 6, 6, 2, 1,
                                                         6, 7, 2, 7, 3, 2, 7, 4, 3, 3, 4, 0, 4, 7, 6, 4, 6, 5};
