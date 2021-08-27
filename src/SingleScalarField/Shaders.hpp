@@ -123,9 +123,9 @@ vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction)
     t2[y]=(t1[y*3+0]+4*t1[y*3+1]+t1[y*3+2])/6;
     N.z=(t2[0]+t2[1]*4+t2[2])/6;
 #else
-    N.x=(texture(volume_data,samplePos+vec3(step,0,0)).r-texture(volume_data,samplePos+vec3(-step,0,0)).r);
-    N.y=(texture(volume_data,samplePos+vec3(0,step,0)).r-texture(volume_data,samplePos+vec3(0,-step,0)).r);
-    N.z=(texture(volume_data,samplePos+vec3(0,0,step)).r-texture(volume_data,samplePos+vec3(0,0,-step)).r);
+    N.x=(texture(volume_data,samplePos+vec3(voxel,0,0)).r-texture(volume_data,samplePos+vec3(-voxel,0,0)).r);
+    N.y=(texture(volume_data,samplePos+vec3(0,voxel,0)).r-texture(volume_data,samplePos+vec3(0,-voxel,0)).r);
+    N.z=(texture(volume_data,samplePos+vec3(0,0,voxel)).r-texture(volume_data,samplePos+vec3(0,0,-voxel)).r);
 #endif
 
     N=-normalize(N);
