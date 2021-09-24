@@ -9,6 +9,7 @@ list(
         ScalarAndVectorField/ScalarAndVectorFieldRender.cpp
         MultiScalarField/MultiScalarFieldRender.cpp
         MultiIsoSurface/MultiIsoSurfaceRender.cpp
+        OceanSingleScalarField/OceanSingleScalarFieldRender.cpp
         ${PROJECT_SOURCE_DIR}/third_party/glad/src/glad.c
 )
 add_library(LibMultiVolumeRenderer ${MultiVolumeRender_SRCS})

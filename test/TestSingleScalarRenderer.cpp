@@ -10,7 +10,7 @@ int main()
     try
     {
         ScalarFieldData scalarFieldData;
-        const char *file_name = "aneurism_256_256_256_uint8.raw";
+        const char *file_name = "46#40#9#lod0_512_512_512_uint8.raw";
         SetDimAndTypeByFileName(file_name, scalarFieldData);
         LoadRawVolumeData(file_name, scalarFieldData);
 //        scalarFieldData.space_x=0.32f;
@@ -20,8 +20,11 @@ int main()
         singleScalarFieldRender.SetScalarFieldData(std::move(scalarFieldData));
         TransferFunc tf;
         tf.AddTFPoint({0.0, {0.0, 0.0, 0.0, 0.0}});
-        tf.AddTFPoint({0.5, {0.9, 0.5, 0.2, 0.0}});
-        tf.AddTFPoint({1.0, {1.0, 1.0, 0.2, 1.0}});
+        tf.AddTFPoint({25.0/255, {0.0, 0.0, 0.0, 0.0}});
+        tf.AddTFPoint({60.0/255, {0.75, 0.5, 1.0, 0.0}});
+        tf.AddTFPoint({64.0/255, {0.75, 0.75, 0.75, 0.9}});
+        tf.AddTFPoint({224.0/255, {1.0, 0.5, 0.75, 0.9}});
+        tf.AddTFPoint({1.0, {1.0, 1.0, 1.0, 1.0}});
         singleScalarFieldRender.SetTransferFunc(std::move(tf));
         singleScalarFieldRender.Render();
     }

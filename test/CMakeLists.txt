@@ -10,3 +10,6 @@ target_link_libraries(TestMultiScalarRenderer PRIVATE LibMultiVolumeRenderer)
 
 add_executable(TestMultiIsoSurfaceRenderer TestMultiIsoSurfaceRenderer.cpp)
 target_link_libraries(TestMultiIsoSurfaceRenderer PRIVATE LibMultiVolumeRenderer)
+
+add_executable(TestOceanSingleScalarRenderer TestOceanSingleScalarRenderer.cpp)
+target_link_libraries(TestOceanSingleScalarRenderer PRIVATE LibMultiVolumeRenderer)
