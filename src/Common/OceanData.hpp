@@ -80,9 +80,9 @@ class OceanScalarData{
         return degree* 3.14159265358979323846/180.0;
     }
     void CoordTransform(std::array<double,3>& coord){
-        double x=coord[2]*std::cos(Radians(coord[1]))*std::sin(Radians(coord[0]));
+        double y=coord[2]*std::cos(Radians(coord[1]))*std::sin(Radians(coord[0]));
         double z=coord[2]*std::sin(Radians(coord[1]));
-        double y=coord[2]*std::cos(Radians(coord[1]))*std::cos(Radians(coord[0]));
+        double x=coord[2]*std::cos(Radians(coord[1]))*std::cos(Radians(coord[0]));
         LOG_INFO("dist1 {0}",sqrt(x*x+y*y+z*z));
         coord[0] = x;
         coord[1] = y;

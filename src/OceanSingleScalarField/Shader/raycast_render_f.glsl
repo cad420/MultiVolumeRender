@@ -35,8 +35,8 @@ bool InPlane(in vec3 point,in vec4 plane){
 vec3 TransformCoord(vec3 sample_pos){
     float dist = sqrt(sample_pos.x*sample_pos.x+sample_pos.y*sample_pos.y+sample_pos.z*sample_pos.z);
     float lat  = asin(sample_pos.z/dist);
-    float lon  = atan(sample_pos.x/sample_pos.y);
-    if(sample_pos.y<0.f)
+    float lon  = atan(sample_pos.y/sample_pos.x);
+    if(sample_pos.x<0.f)
         lon += 3.14159265358979323846;
     lon  = (lon-min_lon)/len_lon;
     lat  = (lat-min_lat)/len_lat;
