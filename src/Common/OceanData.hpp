@@ -80,9 +80,9 @@ class OceanScalarData{
         return degree* 3.14159265358979323846/180.0;
     }
     void CoordTransform(std::array<double,3>& coord){
-        double x=coord[2]*std::cos(Radians(coord[1]))*std::sin(Radians(coord[0]))/earth_radius;
-        double y=coord[2]*std::sin(Radians(coord[1]))/earth_radius;
-        double z=coord[2]*std::cos(Radians(coord[1]))*std::cos(Radians(coord[0]))/earth_radius;
+        double x=coord[2]*std::cos(Radians(coord[1]))*std::sin(Radians(coord[0]));
+        double z=coord[2]*std::sin(Radians(coord[1]));
+        double y=coord[2]*std::cos(Radians(coord[1]))*std::cos(Radians(coord[0]));
         LOG_INFO("dist1 {0}",sqrt(x*x+y*y+z*z));
         coord[0] = x;
         coord[1] = y;
@@ -103,10 +103,10 @@ class OceanScalarData{
         idx = (num_z-1)*num_x*num_y + (num_y-1)*num_x + num_x - 1;
         len_lon = Radians(data_pts[idx].longitude - min_lon);
         len_lat = Radians(data_pts[idx].latitude - min_lat);
-        len_dist = (data_pts[idx].distance - min_dist)/earth_radius;
+        len_dist = (data_pts[idx].distance - min_dist);
         min_lon = Radians(min_lon);
         min_lat = Radians(min_lat);
-        min_dist /= earth_radius;
+//        min_dist /= earth_radius;
     }
     auto GetDataShape() const{
         return std::array<int,3>{(int)num_x,(int)num_y,(int)num_z};

@@ -99,7 +99,7 @@ OceanSingScalarFieldRenderImpl::OceanSingScalarFieldRenderImpl(int w, int h)
     raycast_render_shader=std::make_unique<Shader>("C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanSingleScalarField\\Shader\\raycast_render_v.glsl",
                                                      "C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanSingleScalarField\\Shader\\raycast_render_f.glsl");
 
-    camera=std::make_unique<TrackBallCamera>(1.f,window_w,window_h,glm::vec3(0.f,0.f,0.f));
+    camera=std::make_unique<TrackBallCamera>(1.f*OceanScalarData::earth_radius,window_w,window_h,glm::vec3(0.f,0.f,0.f));
     setScreenQuad();
     setRaycastPosFramebuffer();
     setEventsCallBack();
@@ -182,8 +182,8 @@ void OceanSingScalarFieldRenderImpl::bindShaderUniform()
     raycast_render_shader->setFloat("len_lat",len_lat);
     raycast_render_shader->setFloat("len_dist",len_dist);
     raycast_render_shader->setFloat("radius",min_dist+len_dist);
-    raycast_render_shader->setFloat("step",300.f/OceanScalarData::earth_radius);
-    raycast_render_shader->setFloat("voxel",1000.f/OceanScalarData::earth_radius);
+    raycast_render_shader->setFloat("step",300.f);
+    raycast_render_shader->setFloat("voxel",1000.f);
     raycast_render_shader->setFloat("ka", 0.3f);
     raycast_render_shader->setFloat("kd", 0.7f);
     raycast_render_shader->setFloat("shininess", 100.f);
@@ -201,7 +201,8 @@ void OceanSingScalarFieldRenderImpl::Render()
         glfwPollEvents();
         glm::mat4 view = camera->getViewMatrix();
         glm::mat4 projection =
-            glm::perspective(glm::radians(camera->getZoom()), (float)window_w / (float)window_h, 0.0001f, 6.0f);
+            glm::perspective(glm::radians(camera->getZoom()), (float)window_w / (float)window_h,
+                             0.0001f*OceanScalarData::earth_radius, 6.0f*OceanScalarData::earth_radius);
         glm::mat4 mvp = projection * view;
 
         raycast_pos_shader->use();
@@ -214,7 +215,7 @@ void OceanSingScalarFieldRenderImpl::Render()
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
+        glFrontFace(GL_CW);
         glDrawBuffer(GL_COLOR_ATTACHMENT1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);

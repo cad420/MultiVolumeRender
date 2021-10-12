@@ -27,16 +27,16 @@ uniform float len_lat;
 uniform float len_dist;
 bool InPlane(in vec3 point,in vec4 plane){
     float b = plane.x * point.x + plane.y * point.y + plane.z * point.z + plane.w;
-    if(abs(b)<0.0001f)
+    if(abs(b)<3.f)
         return true;
     else
         return false;
 }
 vec3 TransformCoord(vec3 sample_pos){
     float dist = sqrt(sample_pos.x*sample_pos.x+sample_pos.y*sample_pos.y+sample_pos.z*sample_pos.z);
-    float lat  = asin(sample_pos.y/dist);
-    float lon  = atan(sample_pos.x/sample_pos.z);
-    if(sample_pos.z<0.f)
+    float lat  = asin(sample_pos.z/dist);
+    float lon  = atan(sample_pos.x/sample_pos.y);
+    if(sample_pos.y<0.f)
         lon += 3.14159265358979323846;
     lon  = (lon-min_lon)/len_lon;
     lat  = (lat-min_lat)/len_lat;
