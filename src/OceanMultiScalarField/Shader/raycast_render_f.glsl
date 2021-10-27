@@ -1,22 +1,14 @@
 #version 430 core
 out vec4 frag_color;
-//layout(binding=0,rgba32f) uniform image2D entry_pos;
-//layout(binding=1,rgba32f) uniform image2D exit_pos;
-uniform sampler1D transfer_func;
-uniform sampler3D volume_data;
+
+uniform sampler1D transfer_func1;
+uniform sampler1D transfer_func2;
+uniform sampler3D volume_data1;
+uniform sampler3D volume_data2;
 uniform sampler2DRect entry_pos;
 uniform sampler2DRect exit_pos;
 
-uniform float ka;
-uniform float kd;
-uniform float shininess;
-uniform float ks;
-uniform vec3 light_direction;
 
-uniform float voxel;
-
-uniform vec3 camera_pos;
-uniform float radius;
 uniform float step;
 uniform float min_lon;
 uniform float min_lat;
@@ -37,7 +29,6 @@ vec3 TransformCoord(vec3 sample_pos){
     return vec3(lon,lat,dist);
 }
 
-vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction);
 void main() {
 
     vec3 ray_entry_pos = texture2DRect(entry_pos,ivec2(gl_FragCoord.xy)).xyz;
@@ -54,11 +45,14 @@ void main() {
 
     for(int i=0;i<steps;i++){
         vec3 sample_pos_in_tex=TransformCoord(sample_pos);
-        float scalar=texture(volume_data,sample_pos_in_tex).r;
-        if(scalar>0.f){
-            vec4 sample_color=texture(transfer_func,scalar);
-            if(sample_color.a>0.f){
+        float scalar1=texture(volume_data1,sample_pos_in_tex).r;
+        float scalar2=texture(volume_data2,sample_pos_in_tex).r;
+        if(scalar1>0.f || scalar2>0.f){
+            vec4 sample_color1=texture(transfer_func1,scalar1);
+            vec4 sample_color2=texture(transfer_func2,scalar2);
+            if(sample_color1.a>0.f || sample_color2.a>0.f){
 //                sample_color.rgb=phongShading(sample_pos_in_tex,sample_color.rgb,ray_direction);
+                vec4 sample_color = sample_color1*sample_color1.a + sample_color2*sample_color2.a;
                 color=color + sample_color*vec4(sample_color.aaa,1.f)*(1.f-color.a);
             }
         }
@@ -69,24 +63,4 @@ void main() {
     if(color.a==0.0f)
         discard;
     frag_color=color;
-}
-vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction)
-{
-    vec3 N;
-    N.x=(texture(volume_data,samplePos+vec3(voxel,0,0)).r-texture(volume_data,samplePos+vec3(-voxel,0,0)).r);
-    N.y=(texture(volume_data,samplePos+vec3(0,voxel,0)).r-texture(volume_data,samplePos+vec3(0,-voxel,0)).r);
-    N.z=(texture(volume_data,samplePos+vec3(0,0,voxel)).r-texture(volume_data,samplePos+vec3(0,0,-voxel)).r);
-
-    N=-normalize(N);
-
-    vec3 L=-ray_direction;
-    vec3 R=L;//-ray_direction;
-
-    if(dot(N,L)<0.f)
-        N=-N;
-
-    vec3 ambient=ka*diffuseColor.rgb;
-    vec3 specular=ks*pow(max(dot(N,(L+R)/2.0),0.0),shininess)*vec3(1.0f);
-    vec3 diffuse=kd*max(dot(N,L),0.0)*diffuseColor.rgb;
-    return ambient+specular+diffuse;
 }

@@ -1,22 +1,22 @@
 //
 // Created by wyz on 2021/9/23.
 //
-#include "OceanSingleScalarFieldRender.hpp"
 #include "Common/Camera.hpp"
 #include "Common/ShaderProgram.hpp"
 #include "Common/Utils.hpp"
+#include "OceanMultiScalarFieldRender.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <functional>
-class OceanSingScalarFieldRenderImpl{
+class OceanMultiScalarFieldRenderImpl{
   public:
-    OceanSingScalarFieldRenderImpl(int w,int h);
+    OceanMultiScalarFieldRenderImpl(int w,int h);
 
-    ~OceanSingScalarFieldRenderImpl();
+    ~OceanMultiScalarFieldRenderImpl();
 
-    void SetOceanScalarFieldData(OceanScalarData);
+    void SetOceanScalarFieldData(OceanScalarData,OceanScalarData);
 
-    void SetTransferFunc(TransferFunc);
+    void SetTransferFunc(TransferFunc,TransferFunc);
 
     void Render();
 
@@ -43,16 +43,14 @@ class OceanSingScalarFieldRenderImpl{
     GLuint screen_quad_vao, screen_quad_vbo;
     GLuint raycast_pos_fbo, raycast_pos_rbo;
     GLuint raycast_entry_pos_tex, raycast_exit_pos_tex;
-    GLuint tf_tex;
-    GLuint volume_tex;
+    GLuint tf_tex1,tf_tex2;
+    GLuint volume_tex1,volume_tex2;
 
-
+    std::array<GLint,3> volume_dim;
     std::vector<float> proxy_mesh_vertex;
     std::vector<uint32_t> proxy_mesh_index;
     float min_lon,min_lat,min_dist;
     float len_lon,len_lat,len_dist;
-    std::array<GLint,3> volume_dim;
-
 };
 
 std::function<void(GLFWwindow *window, int width, int height)> framebuffer_resize_callback;
@@ -91,68 +89,105 @@ static void glfw_keyboard_callback(GLFWwindow *window, int key, int scancode, in
 }
 
 
-OceanSingScalarFieldRenderImpl::OceanSingScalarFieldRenderImpl(int w, int h)
+OceanMultiScalarFieldRenderImpl::OceanMultiScalarFieldRenderImpl(int w, int h)
 :window_w(w),window_h(h)
 {
     initGL();
 
-    raycast_pos_shader=std::make_unique<Shader>("C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanSingleScalarField\\Shader\\raycast_pos_v.glsl",
-                                                  "C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanSingleScalarField\\Shader\\raycast_pos_f.glsl");
-    raycast_render_shader=std::make_unique<Shader>("C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanSingleScalarField\\Shader\\raycast_render_v.glsl",
-                                                     "C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanSingleScalarField\\Shader\\raycast_render_f.glsl");
+    raycast_pos_shader=std::make_unique<Shader>("C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanMultiScalarField\\Shader\\raycast_pos_v.glsl",
+                                                  "C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanMultiScalarField\\Shader\\raycast_pos_f.glsl");
+    raycast_render_shader=std::make_unique<Shader>("C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanMultiScalarField\\Shader\\raycast_render_v.glsl",
+                                                     "C:\\Users\\wyz\\projects\\MultiVolumeRender\\src\\OceanMultiScalarField\\Shader\\raycast_render_f.glsl");
 
     camera=std::make_unique<TrackBallCamera>(1.f*OceanScalarData::earth_radius,window_w,window_h,glm::vec3(0.f,0.f,0.f));
     setScreenQuad();
     setRaycastPosFramebuffer();
     setEventsCallBack();
 }
-void OceanSingScalarFieldRenderImpl::SetOceanScalarFieldData(OceanScalarData data)
+void OceanMultiScalarFieldRenderImpl::SetOceanScalarFieldData(OceanScalarData data1,OceanScalarData data2)
 {
-    data.ReOrder();
-    volume_dim=data.GetDataShape();
-    data.GetDataAreaRange(min_lon,min_lat,min_dist,len_lon,len_lat,len_dist);
-    data.GenerateBoundaryMesh();
-    this->proxy_mesh_vertex=std::move(data.GetBoundaryVertices());
-    this->proxy_mesh_index=std::move(data.GetBoundaryIndices());
+    {
+        auto dim1=data1.GetDataShape();
+        auto dim2=data2.GetDataShape();
+        if(!std::equal(dim1.begin(),dim1.end(),dim2.begin(),dim2.end())){
+            throw std::runtime_error("OceanScalarData's dim is not equal.");
+        }
+    }
+    {
+        data1.ReOrder();
+        volume_dim = data1.GetDataShape();
+        data1.GetDataAreaRange(min_lon, min_lat, min_dist, len_lon, len_lat, len_dist);
+        data1.GenerateBoundaryMesh();
+        this->proxy_mesh_vertex = std::move(data1.GetBoundaryVertices());
+        this->proxy_mesh_index = std::move(data1.GetBoundaryIndices());
 
-    glGenTextures(1, &volume_tex);
-    glBindTexture(GL_TEXTURE_3D, volume_tex);
-    // need to binding texture unit
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    float color[4] = {0.f, 0.f, 0.f, 0.f};
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, color);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage3D(GL_TEXTURE_3D,0,GL_RED,volume_dim[0],volume_dim[1],volume_dim[2],0,GL_RED,GL_UNSIGNED_BYTE,data.GetDataArray().data());
+        glGenTextures(1, &volume_tex1);
+        glBindTexture(GL_TEXTURE_3D, volume_tex1);
+        // need to binding texture unit
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        float color[4] = {0.f, 0.f, 0.f, 0.f};
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, color);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, volume_dim[0], volume_dim[1], volume_dim[2], 0, GL_RED, GL_UNSIGNED_BYTE,
+                     data1.GetDataArray().data());
+
+        data2.ReOrder();
+        glGenTextures(1, &volume_tex2);
+        glBindTexture(GL_TEXTURE_3D, volume_tex2);
+        // need to binding texture unit
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, color);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, volume_dim[0], volume_dim[1], volume_dim[2], 0, GL_RED, GL_UNSIGNED_BYTE,
+                     data2.GetDataArray().data());
+    }
     setProxyCube();
 }
-void OceanSingScalarFieldRenderImpl::SetTransferFunc(TransferFunc tf)
+void OceanMultiScalarFieldRenderImpl::SetTransferFunc(TransferFunc tf1,TransferFunc tf2)
 {
-    glGenTextures(1, &tf_tex);
-    glBindTexture(GL_TEXTURE_1D, tf_tex);
+    glGenTextures(1, &tf_tex1);
+    glBindTexture(GL_TEXTURE_1D, tf_tex1);
 
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, TF_DIM, 0, GL_RGBA, GL_FLOAT, tf.GetColorTable().data());
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, TF_DIM, 0, GL_RGBA, GL_FLOAT, tf1.GetColorTable().data());
+
+    glGenTextures(1, &tf_tex2);
+    glBindTexture(GL_TEXTURE_1D, tf_tex2);
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, TF_DIM, 0, GL_RGBA, GL_FLOAT, tf2.GetColorTable().data());
 }
-void OceanSingScalarFieldRenderImpl::bindShaderUniform()
+void OceanMultiScalarFieldRenderImpl::bindShaderUniform()
 {
 
-    glBindTextureUnit(0, tf_tex);
-    glBindTextureUnit(1, volume_tex);
+    glBindTextureUnit(0, tf_tex1);
+    glBindTextureUnit(1, tf_tex2);
+    glBindTextureUnit(2, volume_tex1);
+    glBindTextureUnit(3, volume_tex2);
     GL_CHECK
-    glBindTextureUnit(2, raycast_entry_pos_tex);
-    glBindTextureUnit(3, raycast_exit_pos_tex);
+    glBindTextureUnit(4, raycast_entry_pos_tex);
+    glBindTextureUnit(5, raycast_exit_pos_tex);
     GL_CHECK
     raycast_render_shader->use();
-    raycast_render_shader->setInt("transfer_func", 0);
-    raycast_render_shader->setInt("volume_data", 1);
-    raycast_render_shader->setInt("entry_pos",2);
-    raycast_render_shader->setInt("exit_pos",3);
+    raycast_render_shader->setInt("transfer_func1", 0);
+    raycast_render_shader->setInt("transfer_func2", 1);
+    raycast_render_shader->setInt("volume_data1", 2);
+    raycast_render_shader->setInt("volume_data2", 3);
+    raycast_render_shader->setInt("entry_pos",4);
+    raycast_render_shader->setInt("exit_pos",5);
 
 
     raycast_render_shader->setFloat("min_lon",min_lon);
@@ -161,16 +196,11 @@ void OceanSingScalarFieldRenderImpl::bindShaderUniform()
     raycast_render_shader->setFloat("len_lon",len_lon);
     raycast_render_shader->setFloat("len_lat",len_lat);
     raycast_render_shader->setFloat("len_dist",len_dist);
-    raycast_render_shader->setFloat("radius",min_dist+len_dist);
     raycast_render_shader->setFloat("step",300.f);
-    raycast_render_shader->setFloat("voxel",1000.f);
-    raycast_render_shader->setFloat("ka", 0.3f);
-    raycast_render_shader->setFloat("kd", 0.7f);
-    raycast_render_shader->setFloat("shininess", 100.f);
-    raycast_render_shader->setFloat("ks", 0.6f);
+
     LOG_INFO("min dist {0}",min_dist);
 }
-void OceanSingScalarFieldRenderImpl::Render()
+void OceanMultiScalarFieldRenderImpl::Render()
 {
     bindShaderUniform();
     GL_CHECK
@@ -214,7 +244,7 @@ void OceanSingScalarFieldRenderImpl::Render()
     }
     glfwTerminate();
 }
-OceanSingScalarFieldRenderImpl::~OceanSingScalarFieldRenderImpl()
+OceanMultiScalarFieldRenderImpl::~OceanMultiScalarFieldRenderImpl()
 {
     glDeleteVertexArrays(1, &proxy_cube_vao);
     glDeleteBuffers(1, &proxy_cube_vbo);
@@ -225,18 +255,21 @@ OceanSingScalarFieldRenderImpl::~OceanSingScalarFieldRenderImpl()
     glDeleteFramebuffers(1, &raycast_pos_fbo);
     glDeleteTextures(1, &raycast_entry_pos_tex);
     glDeleteTextures(1, &raycast_exit_pos_tex);
-    glDeleteTextures(1, &tf_tex);
-    glDeleteTextures(1, &volume_tex);
+    glDeleteTextures(1, &tf_tex1);
+    glDeleteTextures(1, &tf_tex2);
+    glDeleteTextures(1, &volume_tex1);
+    glDeleteTextures(1, &volume_tex2);
+
 }
 
-void OceanSingScalarFieldRenderImpl::initGL()
+void OceanMultiScalarFieldRenderImpl::initGL()
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(window_w, window_h, "SingleScalarFieldRender", NULL, NULL);
+    window = glfwCreateWindow(window_w, window_h, "OceanMultiScalarFieldRender", NULL, NULL);
     if (window == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -261,7 +294,7 @@ void OceanSingScalarFieldRenderImpl::initGL()
     glfwSetKeyCallback(window, glfw_keyboard_callback);
 }
 
-void OceanSingScalarFieldRenderImpl::setProxyCube()
+void OceanMultiScalarFieldRenderImpl::setProxyCube()
 {
     glGenVertexArrays(1, &proxy_cube_vao);
     glGenBuffers(1, &proxy_cube_vbo);
@@ -277,7 +310,7 @@ void OceanSingScalarFieldRenderImpl::setProxyCube()
     glBindVertexArray(0);
 }
 
-void OceanSingScalarFieldRenderImpl::setScreenQuad()
+void OceanMultiScalarFieldRenderImpl::setScreenQuad()
 {
     std::array<GLfloat, 24> screen_quad_vertices = {
         -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
@@ -296,7 +329,7 @@ void OceanSingScalarFieldRenderImpl::setScreenQuad()
     glBindVertexArray(0);
 }
 
-void OceanSingScalarFieldRenderImpl::setRaycastPosFramebuffer()
+void OceanMultiScalarFieldRenderImpl::setRaycastPosFramebuffer()
 {
     glGenFramebuffers(1, &raycast_pos_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, raycast_pos_fbo);
@@ -333,7 +366,7 @@ void OceanSingScalarFieldRenderImpl::setRaycastPosFramebuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     GL_CHECK
 }
-void OceanSingScalarFieldRenderImpl::setEventsCallBack()
+void OceanMultiScalarFieldRenderImpl::setEventsCallBack()
 {
     framebuffer_resize_callback = [&](GLFWwindow *window, int width, int height) -> void {
       glViewport(0, 0, width, height);
@@ -366,23 +399,23 @@ void OceanSingScalarFieldRenderImpl::setEventsCallBack()
 }
 
 //---------------------------------------------------------------------------------
-OceanSingScalarFieldRender::OceanSingScalarFieldRender(int w, int h)
+OceanMultiScalarFieldRender::OceanMultiScalarFieldRender(int w, int h)
 {
-    impl=std::make_unique<OceanSingScalarFieldRenderImpl>(w,h);
+    impl=std::make_unique<OceanMultiScalarFieldRenderImpl>(w,h);
 }
-void OceanSingScalarFieldRender::SetOceanScalarFieldData(OceanScalarData data)
+void OceanMultiScalarFieldRender::SetOceanScalarFieldData(OceanScalarData data1,OceanScalarData data2)
 {
-    impl->SetOceanScalarFieldData(std::move(data));
+    impl->SetOceanScalarFieldData(std::move(data1),std::move(data2));
 }
-void OceanSingScalarFieldRender::SetTransferFunc(TransferFunc tf)
+void OceanMultiScalarFieldRender::SetTransferFunc(TransferFunc tf1,TransferFunc tf2)
 {
-    impl->SetTransferFunc(std::move(tf));
+    impl->SetTransferFunc(std::move(tf1),std::move(tf2));
 }
-void OceanSingScalarFieldRender::Render()
+void OceanMultiScalarFieldRender::Render()
 {
     impl->Render();
 }
-OceanSingScalarFieldRender::~OceanSingScalarFieldRender()
+OceanMultiScalarFieldRender::~OceanMultiScalarFieldRender()
 {
     impl.reset();
 }

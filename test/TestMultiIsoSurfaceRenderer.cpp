@@ -24,6 +24,7 @@ int main()
         double iso_value2 =
             1.0 * (200 - scalarFieldData2.min_scalar) / (scalarFieldData2.max_scalar - scalarFieldData2.min_scalar);
         multiIsoSurfaceRender.SetIsoValueAndColor(iso_value1, {1.0, 0.0, 0.0, 1.0}, iso_value2, {0.0, 1.0, 0.0, 1.0});
+
         multiIsoSurfaceRender.Render();
     }
     catch (const std::exception &err)
