@@ -10,7 +10,9 @@
 #include <array>
 #include <cmath>
 #include <Common/Logger.hpp>
+#include <Common/GradientSimilarityMeasure.hpp>
 #include <iostream>
+#include <fstream>
 class OceanScalarData{
   public:
     static constexpr int earth_radius=6371393;//meter
@@ -369,3 +371,123 @@ class OceanScalarData{
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
 };
+
+template <typename T>
+auto ReadTxtFile(const std::string& filename)->std::vector<T>{
+    std::ifstream in(filename);
+    if(!in.is_open()){
+        throw std::runtime_error("Open file failed: "+filename);
+    }
+    std::vector<T> ans;
+    float x;
+    in.seekg(std::ios::beg);
+    while(!in.eof()){
+        in >> x;
+        ans.push_back(x);
+    }
+    return ans;
+}
+
+template <typename SrcT>
+auto TypeTransformToUInt8(const std::vector<SrcT>& src){
+    auto min_max = std::minmax_element(src.cbegin(),src.cend());
+    SrcT min_val = *min_max.first;
+    SrcT max_val = *min_max.second;
+    std::vector<uint8_t> res(src.size());
+    for(size_t i =0;i<src.size();i++){
+        res[i] = 1.0 * (src[i] - min_val) / (max_val-min_val) * 255;
+    }
+    return res;
+}
+
+inline auto ReadOceanDataFromFile(const std::vector<std::string>& paths)->OceanScalarData{
+    assert(paths.size()==4);
+    if(paths.size()!=4){
+        throw std::runtime_error("error paths size");
+    }
+    auto longtitudes = ReadTxtFile<float>(paths[0]);
+    std::cout<<"longtitude size: "<<longtitudes.size()<<std::endl;
+    auto latitudes = ReadTxtFile<float>(paths[1]);
+    std::cout<<"latitude size: "<<latitudes.size()<<std::endl;
+    auto heights = ReadTxtFile<float>(paths[2]);
+    std::cout<<"height size: "<<heights.size()<<std::endl;
+    auto datas = ReadTxtFile<float>(paths[3]);
+    std::cout<<"data size: "<<datas.size()<<std::endl;
+    auto count = longtitudes.size()*latitudes.size()*heights.size();
+    if(count != datas.size()){
+        throw std::runtime_error("data file error");
+    }
+    auto scalars = TypeTransformToUInt8(datas);
+    OceanScalarData ocean_data(longtitudes.size(),latitudes.size(),heights.size());
+    int idx = 0;
+    for(int d = 0;d<heights.size();d++){
+        for(int y=0;y<latitudes.size();y++){
+            for(int x=0;x<longtitudes.size();x++){
+                ocean_data.AddOceanScalarPoint({longtitudes[x],latitudes[y],6371393.0f+5000*heights[d],scalars[idx++]});
+            }
+        }
+    }
+    if(idx != scalars.size()){
+        throw std::runtime_error("data size not correct");
+    }
+    return ocean_data;
+}
+
+inline OceanScalarData OceanDataSimilarityMeasure(const std::vector<std::string>& paths_1,const std::vector<std::string>& paths_2){
+    assert(paths_1.size()==4 && paths_2.size()==4);
+    if(paths_1.size()!=4 || paths_2.size()!=4){
+        throw std::runtime_error("error paths size");
+    }
+    auto longtitudes_1 = ReadTxtFile<float>(paths_1[0]);
+    std::cout<<"longtitude size: "<<longtitudes_1.size()<<std::endl;
+    auto latitudes_1 = ReadTxtFile<float>(paths_1[1]);
+    std::cout<<"latitude size: "<<latitudes_1.size()<<std::endl;
+    auto heights_1 = ReadTxtFile<float>(paths_1[2]);
+    std::cout<<"height size: "<<heights_1.size()<<std::endl;
+    auto datas_1 = ReadTxtFile<float>(paths_1[3]);
+    std::cout<<"data size: "<<datas_1.size()<<std::endl;
+    auto count_1 = longtitudes_1.size()*latitudes_1.size()*heights_1.size();
+    if(count_1 != datas_1.size()){
+        throw std::runtime_error("data file error");
+    }
+
+    auto longtitudes_2 = ReadTxtFile<float>(paths_2[0]);
+    std::cout<<"longtitude size: "<<longtitudes_2.size()<<std::endl;
+    auto latitudes_2 = ReadTxtFile<float>(paths_2[1]);
+    std::cout<<"latitude size: "<<latitudes_2.size()<<std::endl;
+    auto heights_2 = ReadTxtFile<float>(paths_2[2]);
+    std::cout<<"height size: "<<heights_2.size()<<std::endl;
+    auto datas_2 = ReadTxtFile<float>(paths_2[3]);
+    std::cout<<"data size: "<<datas_2.size()<<std::endl;
+    auto count_2 = longtitudes_2.size()*latitudes_2.size()*heights_2.size();
+    if(count_2 != datas_2.size()){
+        throw std::runtime_error("data file error");
+    }
+
+    if(latitudes_1.size()!=latitudes_2.size() || longtitudes_1.size()!= longtitudes_2.size() || heights_1.size()!=heights_2.size()
+        || datas_1.size()!=datas_2.size()){
+        throw std::runtime_error("Two data not the same area");
+    }
+
+
+    using namespace VolCorrelation;
+    std::vector<float*> fields = {datas_1.data(),datas_2.data()};
+    //calculate gradient similarity before transform to unit8
+    auto res = calculateGradientSimilarity(fields,longtitudes_1.size(),latitudes_1.size(),heights_1.size());
+    //transform gradient similarity measure result to uint8
+    auto scalars = TypeTransformToUInt8(res);
+
+    OceanScalarData ocean_data(longtitudes_1.size(),latitudes_1.size(),heights_1.size());
+    int idx = 0;
+    for(int d = 0;d<heights_1.size();d++){
+        for(int y=0;y<latitudes_1.size();y++){
+            for(int x=0;x<longtitudes_1.size();x++){
+                ocean_data.AddOceanScalarPoint({longtitudes_1[x],latitudes_1[y],6371393.0f+5000*heights_1[d],scalars[idx++]});
+            }
+        }
+    }
+    if(idx != scalars.size()){
+        throw std::runtime_error("data size not correct");
+    }
+    return ocean_data;
+}

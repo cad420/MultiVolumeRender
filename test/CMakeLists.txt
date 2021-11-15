@@ -22,3 +22,6 @@ target_link_libraries(TestOceanMultiIsoSurfaceRenderer PRIVATE LibMultiVolumeRen
 
 add_executable(TestGradientSimilarityMeasure TestGradientSimilarityMeasure.cpp)
 target_link_libraries(TestGradientSimilarityMeasure PRIVATE LibMultiVolumeRenderer)
+
+add_executable(TestIOAndMeasure TestIOAndMeasure.cpp)
+target_link_libraries(TestIOAndMeasure PRIVATE LibMultiVolumeRenderer)
