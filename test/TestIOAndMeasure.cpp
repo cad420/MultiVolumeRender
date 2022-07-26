@@ -17,7 +17,8 @@ int main(int argc,char** argv){
             renderer.SetOceanScalarFieldData(std::move(ocean_data));
 
             TransferFunc tf;
-            tf.AddTFPoint({0.0, {1.0, 1.0, 1.0, 0.0}});
+            tf.AddTFPoint({0.0, {0.0, 1.0, 0.0, 0.0}});
+            tf.AddTFPoint({0.9, {1.0, 1.0, 0.0, 0.0}});
             tf.AddTFPoint({1.0, {1.0, 0.0, 0.0, 1.0}});
             renderer.SetTransferFunc(std::move(tf));
 
@@ -26,15 +27,15 @@ int main(int argc,char** argv){
         //test2: read two ocean datas from txt and measure their similarity and then get one OceanData represent similarity
         {
             auto ocean_data = OceanDataSimilarityMeasure(
-                {{"Windlongtitude.txt"}, {"Windlatitude.txt"}, {"Windheight.txt"}, {"Winddata.txt"}},
-                {{"Windlongtitude.txt"}, {"Windlatitude.txt"}, {"Windheight.txt"}, {"HumidityData.txt"}}
+                {{"Windlongtitude.txt"}, {"Windlatitude.txt"}, {"Windheight.txt"}, {"WindData_00.txt"}},
+                {{"Windlongtitude.txt"}, {"Windlatitude.txt"}, {"Windheight.txt"}, {"WindData_12.txt"}}
                 );
             OceanSingScalarFieldRender renderer(1200, 900);
 
             renderer.SetOceanScalarFieldData(std::move(ocean_data));
 
             TransferFunc tf;
-            tf.AddTFPoint({0.0, {1.0, 1.0, 1.0, 0.0}});
+            tf.AddTFPoint({0.0, {0.0, 1.0, 0.0, 0.0}});
             tf.AddTFPoint({1.0, {1.0, 0.0, 0.0, 1.0}});
             renderer.SetTransferFunc(std::move(tf));
 

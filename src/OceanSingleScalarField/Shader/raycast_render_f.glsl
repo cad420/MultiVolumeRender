@@ -1,7 +1,5 @@
-#version 430 core
+#version 400 core
 out vec4 frag_color;
-//layout(binding=0,rgba32f) uniform image2D entry_pos;
-//layout(binding=1,rgba32f) uniform image2D exit_pos;
 uniform sampler1D transfer_func;
 uniform sampler3D volume_data;
 uniform sampler2DRect entry_pos;
@@ -40,8 +38,8 @@ vec3 TransformCoord(vec3 sample_pos){
 vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction);
 void main() {
 
-    vec3 ray_entry_pos = texture2DRect(entry_pos,ivec2(gl_FragCoord.xy)).xyz;
-    vec3 ray_exit_pos  = texture2DRect(exit_pos, ivec2(gl_FragCoord.xy)).xyz;
+    vec3 ray_entry_pos = texture2DRect(entry_pos,gl_FragCoord.xy).xyz;
+    vec3 ray_exit_pos  = texture2DRect(exit_pos, gl_FragCoord.xy).xyz;
     vec3 ray_direction=normalize(ray_exit_pos-ray_entry_pos);
 
     vec3 start2end=ray_exit_pos-ray_entry_pos;

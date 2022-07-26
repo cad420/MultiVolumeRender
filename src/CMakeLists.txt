@@ -2,6 +2,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
 include(${PROJECT_SOURCE_DIR}/third_party/glm.cmake)
 include(${PROJECT_SOURCE_DIR}/third_party/glfw.cmake)
 include(${PROJECT_SOURCE_DIR}/third_party/spdlog.cmake)
+set(GLAD_ROOT_DIR ${PROJECT_SOURCE_DIR}/third_party/glad4_0)
 list(
         APPEND
         MultiVolumeRender_SRCS
@@ -12,7 +13,7 @@ list(
         OceanSingleScalarField/OceanSingleScalarFieldRender.cpp
         OceanMultiScalarField/OceanMultiScalarFieldRender.cpp
         OceanMultiIsoSurface/OceanMultiIsoSurfaceRender.cpp
-        ${PROJECT_SOURCE_DIR}/third_party/glad/src/glad.c
+        ${GLAD_ROOT_DIR}/src/glad.c
 )
 add_library(LibMultiVolumeRenderer ${MultiVolumeRender_SRCS})
 
@@ -27,7 +28,7 @@ target_link_libraries(LibMultiVolumeRenderer
 target_include_directories(LibMultiVolumeRenderer
         PUBLIC
         ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/third_party/glad/include
+        ${GLAD_ROOT_DIR}/include
         )
 embed_shaders(
         CONFIG_FILE ${CMAKE_CURRENT_SOURCE_DIR}/SingleScalarField/Shaders.hpp.in

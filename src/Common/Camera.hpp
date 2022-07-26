@@ -239,8 +239,8 @@ inline void TrackBallCamera::processMouseScroll(float yoffset)
     else
     {
         eye_pos -= glm::vec3(0.f, 0.f, getRadius() / 8);
-        if (eye_pos.z < ball_center_pos.z + getRadius() * 1.8)
-            eye_pos.z = ball_center_pos.z + getRadius() * 1.8;
+        if (eye_pos.z < ball_center_pos.z + getRadius() * 0.8)
+            eye_pos.z = ball_center_pos.z + getRadius() * 0.8;
     }
     //        std::cout<<eye_pos.x<<" "<<eye_pos.y<<" "<<eye_pos.z<<std::endl;
 }

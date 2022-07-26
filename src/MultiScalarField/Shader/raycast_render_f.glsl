@@ -1,11 +1,13 @@
-#version 430 core
+#version 400 core
 out vec4 frag_color;
-layout(binding=0,rgba32f) uniform image2D entry_pos;
-layout(binding=1,rgba32f) uniform image2D exit_pos;
+//layout(binding=0,rgba32f) uniform image2D entry_pos;
+//layout(binding=1,rgba32f) uniform image2D exit_pos;
 uniform sampler1D transfer_func1;
 uniform sampler1D transfer_func2;
 uniform sampler3D volume_data1;
 uniform sampler3D volume_data2;
+uniform sampler2DRect entry_pos;
+uniform sampler2DRect exit_pos;
 
 uniform float ka;
 uniform float kd;
@@ -21,8 +23,10 @@ uniform vec3 space_ratio;
 
 vec3 phongShading(vec3 samplePos,vec3 diffuseColor,vec3 ray_direction,int n);
 void main() {
-    vec3 ray_entry_pos=imageLoad(entry_pos,ivec2(gl_FragCoord.xy)).xyz;
-    vec3 ray_exit_pos =imageLoad(exit_pos, ivec2(gl_FragCoord.xy)).xyz;
+//    vec3 ray_entry_pos=imageLoad(entry_pos,ivec2(gl_FragCoord.xy)).xyz;
+//    vec3 ray_exit_pos =imageLoad(exit_pos, ivec2(gl_FragCoord.xy)).xyz;
+    vec3 ray_entry_pos = texture2DRect(entry_pos,gl_FragCoord.xy).xyz;
+    vec3 ray_exit_pos = texture2DRect(exit_pos,gl_FragCoord.xy).xyz;
     vec3 entry2exit=ray_exit_pos-ray_entry_pos;
     vec3 ray_direction=normalize(entry2exit);
     float distance=dot(ray_direction,entry2exit);

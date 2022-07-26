@@ -1,4 +1,4 @@
-#version 430 core
+#version 400 core
 out vec4 frag_color;
 
 uniform sampler3D volume_data1;

@@ -144,13 +144,23 @@ void SingleScalarFieldRenderImpl::SetTransferFunc(TransferFunc tf)
 
 void SingleScalarFieldRenderImpl::bindShaderUniform()
 {
-    glBindTextureUnit(0, tf_tex);
-    glBindTextureUnit(1, volume_tex);
-    glBindTextureUnit(2, raycast_entry_pos_tex);
-    glBindTextureUnit(3, raycast_exit_pos_tex);
+//    glBindTextureUnit(0, tf_tex);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D,tf_tex);
+//    glBindTextureUnit(1, volume_tex);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_3D,volume_tex);
+//    glBindTextureUnit(2, raycast_entry_pos_tex);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_RECTANGLE,raycast_entry_pos_tex);
+//    glBindTextureUnit(3, raycast_exit_pos_tex);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_RECTANGLE,raycast_exit_pos_tex);
     raycast_render_shader->use();
     raycast_render_shader->setInt("transfer_func", 0);
     raycast_render_shader->setInt("volume_data", 1);
+    raycast_render_shader->setInt("entry_pos",2);
+    raycast_render_shader->setInt("exit_pos",3);
 
     raycast_render_shader->setFloat("voxel", voxel);
     raycast_render_shader->setFloat("step", voxel * 0.3f);
@@ -231,7 +241,7 @@ void SingleScalarFieldRenderImpl::initGL()
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(window_w, window_h, "SingleScalarFieldRender", NULL, NULL);
@@ -346,10 +356,11 @@ void SingleScalarFieldRenderImpl::setRaycastPosFramebuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, raycast_pos_fbo);
 
     glGenTextures(1, &raycast_entry_pos_tex);
-    glBindTexture(GL_TEXTURE_2D, raycast_entry_pos_tex);
-    glTextureStorage2D(raycast_entry_pos_tex, 1, GL_RGBA32F, window_w, window_h);
-    glBindImageTexture(0, raycast_entry_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, raycast_entry_pos_tex, 0);
+    glBindTexture(GL_TEXTURE_RECTANGLE, raycast_entry_pos_tex);
+//    glTextureStorage2D(raycast_entry_pos_tex, 1, GL_RGBA32F, window_w, window_h);
+    GL_EXPR(glTexImage2D(GL_TEXTURE_RECTANGLE,0,GL_RGBA32F,window_w,window_h,0,GL_RGBA,GL_FLOAT,nullptr));
+//    glBindImageTexture(0, raycast_entry_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+    GL_EXPR(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, raycast_entry_pos_tex, 0));
 
     glGenRenderbuffers(1, &raycast_pos_rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, raycast_pos_rbo);
@@ -357,10 +368,11 @@ void SingleScalarFieldRenderImpl::setRaycastPosFramebuffer()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, raycast_pos_rbo);
 
     glGenTextures(1, &raycast_exit_pos_tex);
-    glBindTexture(GL_TEXTURE_2D, raycast_exit_pos_tex);
-    glTextureStorage2D(raycast_exit_pos_tex, 1, GL_RGBA32F, window_w, window_h);
-    glBindImageTexture(1, raycast_exit_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, raycast_exit_pos_tex, 0);
+    glBindTexture(GL_TEXTURE_RECTANGLE, raycast_exit_pos_tex);
+//    glTextureStorage2D(raycast_exit_pos_tex, 1, GL_RGBA32F, window_w, window_h);
+    glTexImage2D(GL_TEXTURE_RECTANGLE,0,GL_RGBA32F,window_w,window_h,0,GL_RGBA,GL_FLOAT,nullptr);
+//    glBindImageTexture(1, raycast_exit_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, raycast_exit_pos_tex, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {

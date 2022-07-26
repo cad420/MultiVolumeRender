@@ -1,4 +1,4 @@
-#version 430 core
+#version 400 core
 layout(location=0) in vec3 vertex_pos;
 uniform mat4 MVPMatrix;
 out vec3 world_pos;

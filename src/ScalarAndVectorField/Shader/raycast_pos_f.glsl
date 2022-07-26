@@ -1,4 +1,4 @@
-#version 430 core
+#version 400 core
 in vec3 world_pos;
 out vec4 frag_color;
 uniform bool is_line;

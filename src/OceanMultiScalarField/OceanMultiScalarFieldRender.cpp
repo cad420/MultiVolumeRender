@@ -173,14 +173,27 @@ void OceanMultiScalarFieldRenderImpl::SetTransferFunc(TransferFunc tf1,TransferF
 void OceanMultiScalarFieldRenderImpl::bindShaderUniform()
 {
 
-    glBindTextureUnit(0, tf_tex1);
-    glBindTextureUnit(1, tf_tex2);
-    glBindTextureUnit(2, volume_tex1);
-    glBindTextureUnit(3, volume_tex2);
+//    glBindTextureUnit(0, tf_tex1);
+//    glBindTextureUnit(1, tf_tex2);
+//    glBindTextureUnit(2, volume_tex1);
+//    glBindTextureUnit(3, volume_tex2);
     GL_CHECK
-    glBindTextureUnit(4, raycast_entry_pos_tex);
-    glBindTextureUnit(5, raycast_exit_pos_tex);
+//    glBindTextureUnit(4, raycast_entry_pos_tex);
+//    glBindTextureUnit(5, raycast_exit_pos_tex);
     GL_CHECK
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D,tf_tex1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_1D,tf_tex2);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_3D,volume_tex1);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_3D,volume_tex2);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_RECTANGLE,raycast_entry_pos_tex);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_RECTANGLE,raycast_exit_pos_tex);
+
     raycast_render_shader->use();
     raycast_render_shader->setInt("transfer_func1", 0);
     raycast_render_shader->setInt("transfer_func2", 1);
@@ -266,7 +279,7 @@ void OceanMultiScalarFieldRenderImpl::initGL()
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(window_w, window_h, "OceanMultiScalarFieldRender", NULL, NULL);

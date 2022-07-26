@@ -284,8 +284,8 @@ class OceanScalarData{
         }
         //6.top surface
         if(true){
-            row = num_x;
-            col = num_y;
+            row = num_y;
+            col = num_x;
             triangle_num = (row - 1) * (col - 1) * 2;
             pre_index = this->vertices.size()/3;
             std::vector<float> vertex;
@@ -393,6 +393,7 @@ auto TypeTransformToUInt8(const std::vector<SrcT>& src){
     auto min_max = std::minmax_element(src.cbegin(),src.cend());
     SrcT min_val = *min_max.first;
     SrcT max_val = *min_max.second;
+    LOG_INFO("min value: {}, max value: {}",min_val,max_val);
     std::vector<uint8_t> res(src.size());
     for(size_t i =0;i<src.size();i++){
         res[i] = 1.0 * (src[i] - min_val) / (max_val-min_val) * 255;
