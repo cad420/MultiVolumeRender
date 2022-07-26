@@ -1,4 +1,10 @@
 # MultiVolumeRender
+## Build
+    mkdir build && cd build
+    cmake ..
+    cmake --build .
+## Usage
+    测试程序里的数据路径都是相对路径，运行时需要改变程序的运行目录，可以在```test_data/```目录下运行可执行程序
 ## 数据
 ```
 测试数据均可从该网址下载 https://klacansky.com/open-scivis-datasets/
